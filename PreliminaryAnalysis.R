@@ -13,14 +13,26 @@ if(!require(install.load)){
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
 install_load("tidyverse",
-             "ggplot",
-             "dplyr")
+             "ggplot2",
+             "dplyr",
+             "Rmisc")
 
 diversity <- read_csv("data/diversity/DiversityBiomass.csv")
 leafSeedRootShoot <- read_csv("data/diversity/LeafSeedRootShoot.csv")
 
-g1 <- ggplot(diversity, aes(x=Alive, y=Weight)) +
-  stat_boxplot(fill = NA)
-g1
+
+# Generating site and distance linked total biodiversity
+siteSummary <- diversity %>% group_by(Site,Distance) %>% summarise_at(vars(Weight), list(Sum = sum)) 
+diversityWithSiteSummary <- inner_join(diversity, siteSummary, by  = c("Site","Distance"))
+
+# Generate unique identifier to easily map down to one entry for each site-distance combination
+diversityWithSiteSummary <- within(diversityWithSiteSummary,  GroupId <- paste(Site,Distance , sep=""))
+diversityWithSiteSummary <- diversityWithSiteSummary[!duplicated(diversityWithSiteSummary$GroupId),]
+diversityWithSiteSummary <- diversityWithSiteSummary%>% select(-one_of("GroupId"))
+diversityWithSiteSummary
+
+# Take summary statistics
+diversitySEByAliveAndDistance <- summarySE(diversityWithSiteSummary, measurevar = "Sum", groupvars = c("Distance","Alive"))
+diversitySEByAliveAndDistance
 
 
