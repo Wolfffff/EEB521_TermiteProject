@@ -22,8 +22,6 @@ install_load("devtools",
              "data.table",
              "gridExtra")
 
-install_github("microbiome/microbiome")
-
 
 diversity <- read_csv("data/diversity/DiversityBiomass.csv")
 leafSeedRootShoot <- read_csv("data/diversity/LeafSeedRootShoot.csv")
@@ -105,5 +103,80 @@ sa_Alive = ggplot(liveDeadAlive, aes(x = Species, fill = Species, y = RelAbund))
   theme_minimal()
 sa_Alive
 
-gridExtra::grid.arrange(sa_Dead,sa_Alive,ncol=2,top="Species Abundance")
+grid.arrange(sa_Dead,sa_Alive,ncol=2)
+
+
+# 24012020 ----------------------------------------------------------------
+
+# Analysis of termite mound data by distance and live status
+
+diversitySplitByDistAlive <- diversity %>% dplyr::group_by(Alive,Distance) %>% dplyr::mutate(GroupSum = sum(Weight)) %>% dplyr::group_by(Alive,Distance) %>% dplyr::group_split()
+
+DeadD <- diversitySplitByDistAlive[[2]]
+DeadD4 <- diversitySplitByDistAlive[[1]]
+
+LiveD <- diversitySplitByDistAlive[[4]]
+LiveD4 <- diversitySplitByDistAlive[[3]]
+
+DeadD <- DeadD %>% dplyr::group_by(Species) %>% dplyr::mutate(RelAbund = sum(Weight) / GroupSum)
+DeadD <- DeadD[!duplicated(DeadD$Species),]
+DeadD$Species <- factor(DeadD$Species, levels = DeadD$Species[order(DeadD$RelAbund,decreasing = T)])
+
+DeadD4 <- DeadD4 %>% dplyr::group_by(Species) %>% dplyr::mutate(RelAbund = sum(Weight) / GroupSum)
+DeadD4 <- DeadD4[!duplicated(DeadD4$Species),]
+DeadD4$Species <- factor(DeadD4$Species, levels = DeadD4$Species[order(DeadD4$RelAbund,decreasing = T)])
+
+
+LiveD <- LiveD %>% dplyr::group_by(Species) %>% dplyr::mutate(RelAbund = sum(Weight) / GroupSum)
+LiveD <- LiveD[!duplicated(LiveD$Species),]
+LiveD$Species <- factor(LiveD$Species, levels = LiveD$Species[order(LiveD$RelAbund,decreasing = T)])
+
+
+LiveD4 <- LiveD4 %>% dplyr::group_by(Species) %>% dplyr::mutate(RelAbund = sum(Weight) / GroupSum)
+LiveD4 <- LiveD4[!duplicated(LiveD4$Species),]
+LiveD4$Species <- factor(LiveD4$Species, levels = LiveD4$Species[order(LiveD4$RelAbund,decreasing = T)])
+
+
+sa_DeadD = ggplot(DeadD, aes(x = Species, fill = Species, y = RelAbund)) + 
+  geom_bar(stat = "identity", colour = "black") + 
+  ggtitle("Dead Termite Mounds at Distance D") +
+  ylim(c(0,.7)) +
+  labs(x = "", y = "", fill = "Species") +
+  scale_fill_manual(values = color_sa) +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+sa_DeadD4 = ggplot(DeadD4, aes(x = Species, fill = Species, y = RelAbund)) + 
+  geom_bar(stat = "identity", colour = "black") + 
+  ggtitle("Dead Termite Mounds at Distance D4") +
+  ylim(c(0,.7)) +
+  labs(x = "", y = "", fill = "Species") +
+  scale_fill_manual(values = color_sa) +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+
+sa_LiveD = ggplot(LiveD, aes(x = Species, fill = Species, y = RelAbund)) + 
+  geom_bar(stat = "identity", colour = "black") + 
+  ggtitle("Live Termite Mounds at Distance D") +
+  ylim(c(0,.7)) +
+  labs(x = "", y = "", fill = "Species") +
+  scale_fill_manual(values = color_sa) +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+sa_LiveD4 = ggplot(LiveD4, aes(x = Species, fill = Species, y = RelAbund)) + 
+  geom_bar(stat = "identity", colour = "black") + 
+  ggtitle("Live Termite Mounds at Distance D4") +
+  ylim(c(0,.7)) +
+  labs(x = "", y = "", fill = "Species") +
+  scale_fill_manual(values = color_sa) +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+
+##Result
+grid.arrange(sa_DeadD, sa_DeadD4, sa_LiveD,sa_LiveD4,ncol=2,left="Relative Abundance (%)", top="Species Abundances by Live Status and Distance")
+
+
 
