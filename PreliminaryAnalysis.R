@@ -175,7 +175,7 @@ sa_LiveD4 = ggplot(LiveD4, aes(x = Species, fill = Species, y = RelAbund)) +
   theme(legend.position = "none")
 
 
-##Result
+# Resykt
 grid.arrange(sa_DeadD, sa_DeadD4, sa_LiveD,sa_LiveD4,ncol=2,left="Relative Abundance (%)", top="Species Abundances by Live Status and Distance")
 
 
